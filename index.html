@@ -1,0 +1,1131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>A Movie of Atoms</title>
+<style>
+:root{
+  --bg:#f5f3ee; --panel:#ffffff; --ink:#1b1a17; --muted:#5b574f; --faint:#97928a; --line:#e2ddd2; --grid:#ebe7dd; --code:#eeeae1;
+  --accent:#1f5fa6; --on-accent:#ffffff; --accent-soft:rgba(31,95,166,0.10);
+  --rep:#cc4a2b; --att:#0f7b6c; --ke:#d0542a; --pe:#2a6fb8;
+  --ff:#b4690e; --ai:#6a4bc4; --ml:#0f7b6c;
+  --s0:#2f62c4; --s1:#1a9e94; --s2:#e3ad1e; --s3:#e8702a; --s4:#c4312a; --oxy:#d6453a; --hyd:#f3f1ea;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#141412; --panel:#1d1c19; --ink:#eeebe3; --muted:#b5b0a4; --faint:#7d786e; --line:#33312b; --grid:#292823; --code:#292823;
+    --accent:#79aef0; --on-accent:#0c1a2c; --accent-soft:rgba(121,174,240,0.14);
+    --rep:#f07f5e; --att:#3cc7a8; --ke:#f08a5d; --pe:#79aef0;
+    --ff:#e6a94e; --ai:#a993f5; --ml:#3cc7a8;
+    --s0:#5b8ff0; --s1:#2fc0b2; --s2:#f2c443; --s3:#f28a45; --s4:#ef5a4c; --oxy:#f07060; --hyd:#e9e6dd;
+  }
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.65 system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+h1,h2,h3,h4{font-family:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;font-weight:600;line-height:1.2;letter-spacing:-0.01em}
+h1{font-size:clamp(2.3rem,6vw,3.6rem);margin:.15em 0 .3em}
+h2{font-size:clamp(1.6rem,4vw,2.1rem);margin:0 0 .5em}
+h3{font-size:1.25rem;margin:1.8em 0 .4em}
+p,li{max-width:46em}
+.wrap{max-width:1100px;margin:0 auto;padding:0 20px}
+header.hero{padding:60px 0 28px;border-bottom:1px solid var(--line)}
+.kicker{text-transform:uppercase;letter-spacing:.14em;font-size:.76rem;color:var(--accent);font-weight:700;margin:0}
+.lede{font-size:1.2rem;color:var(--muted)}
+.toc{display:flex;flex-wrap:wrap;gap:6px 20px;margin-top:20px;font-size:.92rem}
+.toc a{color:var(--muted);text-decoration:none;border-bottom:1px solid var(--line)}
+.toc a:hover{color:var(--ink)}
+section{padding:52px 0;border-bottom:1px solid var(--line)}
+.secnum{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent);font-size:.85rem;display:block;margin-bottom:4px}
+.two{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:28px;align-items:start}
+.two.even{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+@media (max-width:860px){.two,.two.even{grid-template-columns:minmax(0,1fr)}}
+.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px}
+canvas{display:block;width:100%;height:auto;background:var(--panel);border:1px solid var(--line);border-radius:12px}
+#ljCanvas{touch-action:pan-y;cursor:ew-resize}
+#mdCanvas{cursor:pointer}
+.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}
+.formula{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code);padding:12px 16px;border-radius:10px;font-size:.95rem;line-height:1.8;overflow-x:auto}
+.callout{border-left:3px solid var(--accent);padding:2px 0 2px 16px;margin:22px 0}
+button{font:inherit;font-size:.93rem;padding:8px 14px;border-radius:9px;border:1px solid var(--line);background:var(--panel);color:var(--ink);cursor:pointer;transition:border-color .15s,transform .05s}
+button:hover{border-color:var(--faint)}
+button:active{transform:translateY(1px)}
+button.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+button.primary.on{background:transparent;color:var(--accent)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 8px}
+.chip{font-size:.88rem;padding:6px 12px;border-radius:999px}
+.chip.active{border-color:var(--accent);color:var(--accent);background:var(--accent-soft);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:12px 0}
+label.slider{display:flex;align-items:center;gap:12px;font-size:.9rem;color:var(--muted);margin:12px 0}
+label.slider input{flex:1;min-width:80px;accent-color:var(--accent)}
+label.slider.off{opacity:.45}
+label.check{display:flex;align-items:center;gap:8px;font-size:.92rem;color:var(--ink);margin:10px 0;cursor:pointer}
+label.check input{accent-color:var(--accent);width:17px;height:17px;flex:none}
+output{min-width:5.5em;font-variant-numeric:tabular-nums;color:var(--ink);text-align:right;font-size:.9rem}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:16px 0}
+.stats.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+@media (max-width:640px){.stats.three{grid-template-columns:minmax(0,1fr)}}
+.stats>div{background:var(--code);border-radius:10px;padding:10px 12px}
+dt{font-size:.76rem;color:var(--muted)}
+dd{margin:0;font-size:1.05rem;font-weight:600;font-variant-numeric:tabular-nums}
+.legend{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:.85rem;color:var(--muted);margin:10px 2px 0;align-items:center}
+.sw{display:inline-block;width:11px;height:11px;border-radius:50%;margin-right:6px;vertical-align:-1px}
+.sw.ln{width:18px;height:3px;border-radius:2px;vertical-align:3px}
+.sw.dash{width:18px;height:0;border-top:2px dashed var(--faint);border-radius:0;vertical-align:3px}
+.gradbar{display:inline-block;width:70px;height:10px;border-radius:3px;vertical-align:-1px;margin:0 6px;background:linear-gradient(90deg,var(--s0),var(--s1),var(--s2),var(--s3),var(--s4))}
+.status{font-size:.9rem;color:var(--muted);min-height:1.5em;margin:6px 0 0}
+.chartlabel{font-size:.84rem;color:var(--muted);margin:0 0 6px 2px}
+.loop{display:flex;flex-wrap:wrap;align-items:stretch;gap:10px;margin:22px 0 8px}
+.lbox{flex:1 1 170px;background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.lbox b{display:block;font-size:1rem;line-height:1.3;margin:2px 0}
+.lbox span{display:block;font-size:.85rem;color:var(--muted);line-height:1.4}
+.lbox .lnum{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;color:var(--accent);font-size:.8rem}
+.loopnote{font-size:.92rem;color:var(--muted);margin:4px 0 0}
+.flow{display:flex;flex-direction:column;gap:14px;margin:22px 0}
+.flowrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.flowtag{width:9em;font-weight:700;font-size:.92rem}
+.flowtag.ff{color:var(--ff)} .flowtag.ai{color:var(--ai)}
+.fbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:8px 14px;font-weight:600;font-size:.95rem;line-height:1.3}
+.fbox small{display:block;font-weight:400;color:var(--muted);font-size:.8rem}
+.fbox.ff{border:2px solid var(--ff)} .fbox.ai{border:2px solid var(--ai)}
+.farrow{color:var(--faint);font-size:1.2rem}
+.ffgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px;margin:22px 0}
+.ffcard{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:14px}
+.ffcard svg{display:block;width:100%;height:72px;margin-bottom:8px}
+.ffcard h4{margin:0 0 4px;font-size:1.02rem}
+.ffcard .mono{font-size:.82rem;color:var(--ff);display:block;margin-bottom:6px}
+.ffcard p{margin:0;font-size:.88rem;color:var(--muted);line-height:1.5}
+.ic-atom{fill:var(--ff);fill-opacity:.2;stroke:var(--ff);stroke-width:2}
+.ic-line{fill:none;stroke:var(--ff);stroke-width:2.5;stroke-linejoin:round;stroke-linecap:round}
+.ic-dash{fill:none;stroke:var(--faint);stroke-width:1.5;stroke-dasharray:4 4}
+.ic-text{fill:var(--ink);font:600 22px system-ui,sans-serif}
+.tablewrap{overflow-x:auto;margin-top:16px}
+table{border-collapse:collapse;width:100%;font-size:.92rem;min-width:640px}
+th,td{text-align:left;padding:9px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+thead th{font-weight:700;font-size:.85rem}
+tbody th{font-weight:600;color:var(--muted);font-size:.82rem;width:16%}
+th.ff{color:var(--ff)} th.ai{color:var(--ai)} th.ml{color:var(--ml)}
+footer{padding:36px 0 60px;color:var(--muted);font-size:.88rem}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="kicker">An interactive explainer</p>
+    <h1>A movie of atoms</h1>
+    <p class="lede">What molecular dynamics is, how a computer makes atoms move, and what changes when the forces come straight from quantum mechanics (ab initio molecular dynamics). Made with the assistance of Claude Opus 5.5 (Anthropic). Use at your own peril.</p>
+    <nav class="toc">
+      <a href="#idea">1 · The idea</a>
+      <a href="#forces">2 · Forces from energy</a>
+      <a href="#box">3 · A box of atoms</a>
+      <a href="#numbers">4 · Reading the movie</a>
+      <a href="#timestep">5 · The time step</a>
+      <a href="#forcefields">6 · Force fields</a>
+      <a href="#aimd">7 · Ab initio MD</a>
+      <a href="#tradeoff">8 · The trade-off</a>
+      <a href="#compare">9 · Side by side</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<section id="idea">
+  <div class="wrap">
+    <span class="secnum">01</span>
+    <h2>What is molecular dynamics?</h2>
+    <p>Molecular dynamics (MD) is a way of making a movie of atoms on a computer. You place atoms in a box, work out the force each one feels from its neighbors, and use Newton's second law, <strong>F = m·a</strong>, to move every atom a tiny step forward in time. Then you recalculate the forces at the new positions and do it again. Repeat millions of times, string the frames together, and you can watch a liquid flow, a crystal melt, a protein fold or a drug molecule settle into its target.</p>
+    <div class="loop">
+      <div class="lbox"><span class="lnum">1</span><b>Know where every atom is</b><span>its position and velocity</span></div>
+      <div class="lbox"><span class="lnum">2</span><b>Work out the forces</b><span>from an energy formula, or from quantum mechanics</span></div>
+      <div class="lbox"><span class="lnum">3</span><b>Accelerate</b><span>a = F ÷ m, for every atom</span></div>
+      <div class="lbox"><span class="lnum">4</span><b>Take a tiny step</b><span>move everything forward by Δt ≈ 1 femtosecond</span></div>
+    </div>
+    <p class="loopnote">↻ Then back to step 2, millions or billions of times.</p>
+    <p>The steps have to be tiny because atoms move fast. A chemical bond vibrates back and forth about once every 10 femtoseconds (a femtosecond is 10⁻¹⁵ s, a millionth of a billionth of a second). With 1-femtosecond steps, one nanosecond of simulated time takes a million steps, and a microsecond takes a billion.</p>
+    <h3>Why people bother</h3>
+    <p>MD works like a computational microscope. Experiments usually see averages over trillions of molecules, or frozen snapshots. MD shows every atom at every instant. It's used to design drugs, understand how proteins work, find better battery materials, and predict melting points and how fast things diffuse. The field goes back to the 1950s: Alder and Wainwright simulated colliding hard spheres in 1957, and in 1964 Aneesur Rahman simulated 864 argon atoms, the same kind of system you'll play with below.</p>
+    <p class="callout"><strong>How is this different from the Monte Carlo darts?</strong> Monte Carlo jumps between random snapshots and has no clock. MD follows the actual path the atoms take. Once the starting positions and velocities are set, Newton's laws decide everything that follows (apart from optional thermostats, there's no randomness). That means MD can also tell you <em>how fast</em> things happen, such as how quickly a molecule diffuses or how long a bond takes to break, not only which arrangements are likely.</p>
+  </div>
+</section>
+
+<section id="forces">
+  <div class="wrap">
+    <span class="secnum">02</span>
+    <h2>Forces come from an energy landscape</h2>
+    <p>The one ingredient every MD simulation needs is a rule for the energy of the atoms, given where they are. The forces follow from it: each atom is pushed downhill on the energy landscape, and the steeper the slope, the harder the push (force = minus the slope).</p>
+    <p>The simplest case is a pair of neutral atoms such as argon. Their energy is described well by the Lennard-Jones formula, proposed by John Lennard-Jones in 1924:</p>
+    <div class="formula">U(r) = 4ε [ (σ/r)¹² − (σ/r)⁶ ]&nbsp;&nbsp;&nbsp;&nbsp;force = −dU/dr<br>for argon: σ = 3.4 Å, ε = 10.3 meV</div>
+    <ul>
+      <li><strong>Too close</strong>, and the atoms' electron clouds overlap, causing steep repulsion (the r⁻¹² term). This is why atoms have a size.</li>
+      <li><strong>A little apart</strong>, and a weak attraction pulls them together (the r⁻⁶ "van der Waals" term, caused by fleeting ripples in each atom's electron cloud).</li>
+      <li><strong>Far apart</strong>, and almost nothing happens.</li>
+    </ul>
+    <p>Drag the right-hand atom (or anywhere on the chart), or use the slider.</p>
+    <canvas id="ljCanvas" width="1000" height="620" aria-label="Two argon atoms and the Lennard-Jones energy curve; drag to change their distance"></canvas>
+    <label class="slider">Distance <input type="range" id="ljS" min="0.88" max="3" step="0.005" value="1.6"><output id="ljSOut"></output></label>
+    <dl class="stats three">
+      <div><dt>Distance between the atoms</dt><dd id="ljD">—</dd></div>
+      <div><dt>Energy</dt><dd id="ljE">—</dd></div>
+      <div><dt>Force on the right-hand atom</dt><dd id="ljFo">—</dd></div>
+    </dl>
+    <p id="ljNote" class="status"></p>
+  </div>
+</section>
+
+<section id="box">
+  <div class="wrap">
+    <span class="secnum">03</span>
+    <h2>A box of atoms</h2>
+    <p>Here are a few hundred argon-like atoms, all interacting through exactly that curve and moved forward with the four-step loop. It's 2D so you can see every atom; real simulations are 3D, but the rules are the same. Each step is about 11 femtoseconds of argon time. Atoms are colored by speed, because <strong>temperature is just how fast atoms jiggle</strong>.</p>
+    <div class="two">
+      <div>
+        <canvas id="mdCanvas" width="800" height="800" aria-label="Live molecular dynamics simulation of argon-like atoms in a periodic box"></canvas>
+        <div class="legend">
+          <span>slow<i class="gradbar"></i>fast</span>
+          <span><i class="sw" style="background:var(--rep)"></i>force pushing the followed atom</span>
+          <span><i class="sw" style="background:var(--att)"></i>force pulling it</span>
+          <span><i class="sw ln" style="background:var(--muted)"></i>its path</span>
+        </div>
+      </div>
+      <div class="panel">
+        <p class="chartlabel" style="margin-top:0">Start from</p>
+        <div class="chips">
+          <button class="chip" data-preset="crystal">Crystal</button>
+          <button class="chip" data-preset="liquid">Liquid</button>
+          <button class="chip" data-preset="gas">Gas</button>
+          <button class="chip" data-preset="vapor">Condensing vapor</button>
+        </div>
+        <div class="controls">
+          <button id="mdRun" class="primary on">Pause</button>
+          <button id="mdReset">Restart</button>
+        </div>
+        <label class="slider" id="mdTempLbl">Temperature <input type="range" id="mdTemp" min="0.1" max="3" step="0.025" value="0.6"><output id="mdTempOut"></output></label>
+        <label class="check"><input type="checkbox" id="mdThermo" checked> Thermostat: hold the temperature steady</label>
+        <label class="slider">Density <input type="range" id="mdRho" min="0.05" max="0.9" step="0.01" value="0.75"><output id="mdRhoOut"></output></label>
+        <label class="slider">Speed <input type="range" id="mdSpeed" min="1" max="40" step="1" value="12"><output id="mdSpeedOut"></output></label>
+        <label class="check"><input type="checkbox" id="mdForces" checked> Show the forces on the followed atom</label>
+        <label class="check"><input type="checkbox" id="mdTiles"> Show the box's neighboring copies</label>
+        <dl class="stats">
+          <div><dt>Temperature right now</dt><dd id="mdTk">—</dd></div>
+          <div><dt>Simulated time</dt><dd id="mdTime">—</dd></div>
+          <div><dt>Atoms</dt><dd id="mdN">—</dd></div>
+          <div><dt>Total energy per atom</dt><dd id="mdEt">—</dd></div>
+        </dl>
+        <p id="mdNote" class="status"></p>
+        <p class="status">Click any atom to follow it.</p>
+      </div>
+    </div>
+    <div class="two even" style="margin-top:22px">
+      <div>
+        <p class="chartlabel">Energy per atom: kinetic (motion), potential (from the curve above), and their total</p>
+        <canvas id="mdE" width="800" height="380" aria-label="Kinetic, potential and total energy per atom over recent time"></canvas>
+        <div class="legend">
+          <span><i class="sw ln" style="background:var(--ke)"></i>kinetic</span>
+          <span><i class="sw ln" style="background:var(--pe)"></i>potential</span>
+          <span><i class="sw ln" style="background:var(--ink)"></i>total</span>
+        </div>
+      </div>
+      <div>
+        <p class="chartlabel">Radial distribution function g(r): how crowded it is at each distance from an atom</p>
+        <canvas id="mdG" width="800" height="380" aria-label="Radial distribution function of the simulation"></canvas>
+        <div class="legend">
+          <span><i class="sw ln" style="background:var(--accent)"></i>g(r), averaged over recent frames</span>
+          <span><i class="sw dash"></i>random arrangement</span>
+        </div>
+      </div>
+    </div>
+    <h3>Things to try</h3>
+    <ul>
+      <li><strong>Melt a crystal:</strong> press Crystal, then raise the temperature a little at a time. Between roughly 80 and 110 K the neat rows break up and atoms start wandering: it melts. (Melting in 2D happens gradually rather than all at once.) Cool it down again and it refreezes, usually with defects.</li>
+      <li><strong>Follow an atom:</strong> click any atom. In the liquid it rattles around inside a cage of neighbors, then occasionally squeezes out and moves on. That slow wandering is diffusion. The colored lines show the forces on it right now: orange pushes it away, teal pulls it in.</li>
+      <li><strong>Condensing vapor:</strong> the atoms start hot and spread out, then the thermostat cools them. Once they're slow enough, the attraction wins and they clump into droplets and tiny crystals.</li>
+      <li><strong>Switch off the thermostat:</strong> watch the energy chart. Kinetic and potential energy trade back and forth, but the total stays flat, because Newton's laws conserve energy. With the thermostat on, the box behaves as if it's touching surroundings held at a fixed temperature.</li>
+      <li><strong>Show the neighboring copies:</strong> the box is surrounded on every side by copies of itself, so an atom leaving one edge comes back in through the opposite one. This "periodic boundary" trick lets a few hundred atoms stand in for a big chunk of material, with no walls.</li>
+    </ul>
+  </div>
+</section>
+
+<section id="numbers">
+  <div class="wrap">
+    <span class="secnum">04</span>
+    <h2>Turning the movie into numbers</h2>
+    <p>A raw MD run is an enormous pile of coordinates. Its value comes from averaging over it. Temperature is the average kinetic energy. Pressure comes from the forces. How far atoms wander over time (like the trail of the atom you followed) gives the diffusion coefficient. Run long enough and you can extract melting points, heat capacities, viscosities and how tightly a drug binds.</p>
+    <p>One of the most useful averages is the <strong>radial distribution function, g(r)</strong>, plotted beside the simulation. It answers this question: standing on one atom, how much more (or less) likely am I to find another atom at distance r than if the atoms were sprinkled at random?</p>
+    <ul>
+      <li><strong>Gas:</strong> nothing closer than about 3.4 Å (atoms can't overlap), then flat at 1. No structure.</li>
+      <li><strong>Liquid:</strong> a tall first peak (the shell of nearest neighbors), then a few smaller, washed-out bumps. Order only at short range.</li>
+      <li><strong>Crystal:</strong> sharp peaks at the exact lattice distances, continuing far out.</li>
+    </ul>
+    <p class="callout">This is the curve X-ray and neutron diffraction experiments measure, and the kind of curve Reverse Monte Carlo fits, from the last explainer. MD runs the other way: it starts from the forces and <em>predicts</em> g(r). Comparing the two is one of the main ways scientists check that their forces are right.</p>
+  </div>
+</section>
+
+<section id="timestep">
+  <div class="wrap">
+    <span class="secnum">05</span>
+    <h2>Why the steps have to be so small</h2>
+    <p>The loop assumes the force stays roughly constant during each step. If a step is long compared with the fastest motion in the system, atoms overshoot, and the simulation gains energy from nowhere. The fastest motion is usually a bond to a hydrogen atom: the O–H bond in water vibrates about once every 9 femtoseconds.</p>
+    <p>Below, the same O–H bond is simulated with two stepping rules. The dashed outline shows the exact motion, and you can watch the hydrogen hop from step to step.</p>
+    <ul>
+      <li><strong>Euler:</strong> move each atom using its current velocity and current force. It's the most obvious rule, but it adds a little energy at every step, so the vibration grows until the molecule flies apart. Nobody uses it for MD.</li>
+      <li><strong>Velocity Verlet:</strong> update the velocity by half a step, move, recompute the force, then finish updating the velocity. It costs the same (one force calculation per step), but its energy error stays bounded instead of growing, even over billions of steps. Variants of it drive almost every MD simulation. Loup Verlet popularized the approach for MD in 1967.</li>
+    </ul>
+    <label class="slider">Time step Δt <input type="range" id="tsDt" min="0.1" max="3.2" step="0.1" value="0.5"><output id="tsDtOut"></output></label>
+    <dl class="stats three">
+      <div><dt>Steps per O–H vibration</dt><dd id="tsSteps">—</dd></div>
+      <div><dt>Velocity Verlet, after 10 vibrations</dt><dd id="tsV">—</dd></div>
+      <div><dt>Euler, after 10 vibrations</dt><dd id="tsEu">—</dd></div>
+    </dl>
+    <canvas id="tsAnim" width="1000" height="300" aria-label="Animated O-H bond simulated with Euler and velocity Verlet"></canvas>
+    <p class="chartlabel" style="margin-top:16px">How far the bond is stretched over 10 vibrations (1 = the starting stretch)</p>
+    <canvas id="tsChart" width="1000" height="360" aria-label="Bond stretch over time for exact motion, Euler and velocity Verlet"></canvas>
+    <div class="legend">
+      <span><i class="sw dash"></i>exact</span>
+      <span><i class="sw ln" style="background:var(--accent)"></i>velocity Verlet (dots = individual steps)</span>
+      <span><i class="sw ln" style="background:var(--rep)"></i>Euler</span>
+    </div>
+    <p class="callout"><strong>Rule of thumb:</strong> about ten steps per fastest vibration. That's why simulations with hydrogen atoms use 0.5–1 fs steps, or 2 fs if the bonds to hydrogen are frozen with constraints, while the argon box above gets away with about 11 fs. Push the slider past about 2.9 fs and even Verlet blows up.</p>
+  </div>
+</section>
+
+<section id="forcefields">
+  <div class="wrap">
+    <span class="secnum">06</span>
+    <h2>Where the forces come from: classical force fields</h2>
+    <p>Lennard-Jones is fine for argon, but molecules have bonds, angles and electric charges. "Classical" MD handles these with a <strong>force field</strong>: one big formula that adds up a few simple kinds of term. A typical one looks like this:</p>
+    <div class="ffgrid">
+      <div class="ffcard">
+        <svg viewBox="0 0 200 80" aria-hidden="true"><path class="ic-line" d="M64 40 L72 30 L84 50 L96 30 L108 50 L120 30 L132 50 L136 40"/><circle class="ic-atom" cx="48" cy="40" r="16"/><circle class="ic-atom" cx="152" cy="40" r="16"/></svg>
+        <h4>Bond stretching</h4><span class="mono">½ k (r − r₀)²</span>
+        <p>Every chemical bond is a spring with a natural length r₀.</p>
+      </div>
+      <div class="ffcard">
+        <svg viewBox="0 0 200 80" aria-hidden="true"><line class="ic-line" x1="100" y1="24" x2="40" y2="64"/><line class="ic-line" x1="100" y1="24" x2="160" y2="64"/><path class="ic-dash" d="M78.4 38.4 A26 26 0 0 0 121.6 38.4"/><circle class="ic-atom" cx="40" cy="64" r="13"/><circle class="ic-atom" cx="100" cy="24" r="13"/><circle class="ic-atom" cx="160" cy="64" r="13"/></svg>
+        <h4>Angle bending</h4><span class="mono">½ k<sub>θ</sub> (θ − θ₀)²</span>
+        <p>The angle between two bonds prefers a natural opening θ₀.</p>
+      </div>
+      <div class="ffcard">
+        <svg viewBox="0 0 200 80" aria-hidden="true"><path class="ic-line" d="M30 62 L75 26 L125 54 L170 18"/><ellipse class="ic-dash" cx="100" cy="40" rx="9" ry="27" transform="rotate(29 100 40)"/><circle class="ic-atom" cx="30" cy="62" r="12"/><circle class="ic-atom" cx="75" cy="26" r="12"/><circle class="ic-atom" cx="125" cy="54" r="12"/><circle class="ic-atom" cx="170" cy="18" r="12"/></svg>
+        <h4>Twisting (torsion)</h4><span class="mono">k<sub>φ</sub> [1 + cos(nφ − δ)]</span>
+        <p>Rotating around a bond has comfortable and awkward positions.</p>
+      </div>
+      <div class="ffcard">
+        <svg viewBox="0 0 200 80" aria-hidden="true"><circle class="ic-dash" cx="62" cy="40" r="32"/><circle class="ic-dash" cx="138" cy="40" r="32"/><circle class="ic-atom" cx="62" cy="40" r="14"/><circle class="ic-atom" cx="138" cy="40" r="14"/></svg>
+        <h4>Van der Waals</h4><span class="mono">4ε [(σ/r)¹² − (σ/r)⁶]</span>
+        <p>The Lennard-Jones curve from section 2, between atoms that aren't bonded.</p>
+      </div>
+      <div class="ffcard">
+        <svg viewBox="0 0 200 80" aria-hidden="true"><line class="ic-dash" x1="76" y1="40" x2="124" y2="40"/><circle class="ic-atom" cx="55" cy="40" r="18"/><circle class="ic-atom" cx="145" cy="40" r="18"/><text class="ic-text" x="55" y="41" text-anchor="middle" dominant-baseline="central">+</text><text class="ic-text" x="145" y="41" text-anchor="middle" dominant-baseline="central">−</text></svg>
+        <h4>Electrostatics</h4><span class="mono">q₁q₂ ÷ (4πε₀ r)</span>
+        <p>Each atom carries a fixed partial charge. Opposites attract, likes repel.</p>
+      </div>
+    </div>
+    <p>Every bond, angle, twist and pair of atoms contributes a term. The numbers in them (spring stiffnesses, natural lengths, charges, ε and σ) are fitted to experiments and to quantum-mechanical calculations on small molecules, then published as force fields with names like AMBER, CHARMM, OPLS and GROMOS.</p>
+    <div class="two even">
+      <div>
+        <h3>Strength: speed</h3>
+        <p>Forces come from one formula, so a step takes a small fraction of a second even with hundreds of thousands of atoms. Simulating a protein in water for microseconds is routine on a single GPU.</p>
+      </div>
+      <div>
+        <h3>Weakness: it only knows what it was built for</h3>
+        <ul>
+          <li>Bonds are springs, so they can't break and new ones can't form. No chemical reactions.</li>
+          <li>Charges are usually fixed, so the electrons can't respond to their surroundings.</li>
+          <li>It's only as accurate as its fitting, and numbers fitted for one situation may not carry over to another.</li>
+        </ul>
+        <p>Special "reactive" force fields that let bonds break do exist, but they need careful fitting for each chemistry.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="aimd">
+  <div class="wrap">
+    <span class="secnum">07</span>
+    <h2>Ab initio molecular dynamics</h2>
+    <p>"Ab initio" is Latin for "from the beginning". Ab initio MD (AIMD) throws away the pre-made formula. At every single step, it calculates the energy and forces directly from the quantum mechanics of the electrons. The atoms still move with exactly the same Newton loop; only step 2, "work out the forces", changes.</p>
+    <h3>The key idea: electrons are fast, nuclei are slow</h3>
+    <p>An atom is a heavy nucleus surrounded by light electrons, and it's the electrons that form chemical bonds. A proton is about 1,836 times heavier than an electron, so whenever the nuclei shift slightly, the electrons rearrange almost instantly. This is the <strong>Born–Oppenheimer approximation</strong>, and it lets each step split in two. First freeze the nuclei and solve for the electrons' lowest-energy arrangement. Then read off the force on every nucleus and move the nuclei with Newton's laws.</p>
+    <div class="flow">
+      <div class="flowrow"><span class="flowtag ff">Classical MD</span><div class="fbox">Atom positions</div><span class="farrow">→</span><div class="fbox ff">Plug into the force-field formula<small>a small fraction of a second</small></div><span class="farrow">→</span><div class="fbox">Forces</div><span class="farrow">→</span><div class="fbox">Move the atoms<small>Newton, as before</small></div></div>
+      <div class="flowrow"><span class="flowtag ai">Ab initio MD</span><div class="fbox">Atom positions</div><span class="farrow">→</span><div class="fbox ai">Solve for the electrons (DFT)<small>iterate until self-consistent: seconds to minutes</small></div><span class="farrow">→</span><div class="fbox">Forces</div><span class="farrow">→</span><div class="fbox">Move the atoms<small>Newton, as before</small></div></div>
+    </div>
+    <p>The electron calculation is usually done with <strong>density functional theory (DFT)</strong>, developed by Walter Kohn and colleagues in the 1960s (Kohn shared the 1998 Nobel Prize in Chemistry for it). DFT works with the electron density, a single cloud, instead of the full quantum state of every electron, and that makes it affordable for hundreds of atoms. It's iterative: guess the cloud, work out the electric field it creates, find the cloud that field would produce, and repeat until nothing changes. Running that inner loop at every step is why AIMD is so expensive.</p>
+
+    <h3>Try it: pull a molecule apart</h3>
+    <p>Here a hydrogen molecule (H₂) gets a sudden kick of energy that sets its bond vibrating. On the left, the bond is a force-field spring. On the right, the force comes from H₂'s true quantum-mechanical energy curve, which is what an ab initio calculation produces. (To keep the page instant, that curve is pre-computed and approximated by a Morse function; a real AIMD code would recalculate it from the electrons at every step.) Give the bond more than about 4.7 eV and see what happens.</p>
+    <div class="controls">
+      <label class="slider" style="flex:1;min-width:260px;margin:0">Energy of the kick <input type="range" id="h2E" min="0.5" max="7" step="0.1" value="3"><output id="h2EOut"></output></label>
+      <button id="h2Kick" class="primary">Kick it again</button>
+    </div>
+    <canvas id="h2Anim" width="1000" height="300" aria-label="H2 molecule vibrating: spring model versus quantum energy curve"></canvas>
+    <p class="chartlabel" style="margin-top:16px">Energy versus bond length: the spring model and the true H₂ curve</p>
+    <canvas id="h2Chart" width="1000" height="420" aria-label="Energy curves for the spring model and the quantum H2 curve"></canvas>
+    <div class="legend">
+      <span><i class="sw ln" style="background:var(--ff)"></i>spring (force field)</span>
+      <span><i class="sw ln" style="background:var(--ai)"></i>true H₂ curve (ab initio)</span>
+      <span><i class="sw dash"></i>energy you gave the bond</span>
+    </div>
+    <p>Below 4.7 eV, both bonds survive, although the quantum bond stretches further outward than inward, because real bonds are lopsided. Above it, the quantum bond breaks and two free hydrogen atoms fly apart. The spring never breaks, however hard you kick it. Bonds that can break and form are the main reason people pay for AIMD.</p>
+
+    <h3>What AIMD is used for</h3>
+    <ul>
+      <li><strong>Chemical reactions and catalysis:</strong> watching bonds break and form, in solution or on a catalyst's surface.</li>
+      <li><strong>Water and acids:</strong> protons hopping from molecule to molecule through water (the Grotthuss mechanism), which fixed-bond force fields can't describe.</li>
+      <li><strong>Batteries:</strong> how ions move through electrolytes, and how electrolytes break down at electrode surfaces.</li>
+      <li><strong>Extreme conditions:</strong> materials at the pressures and temperatures inside planets, where no force field fitted to ordinary conditions can be trusted.</li>
+      <li><strong>Enzymes:</strong> often in combination with classical MD, using quantum mechanics only for the atoms that react and a force field for everything else. That approach, QM/MM, was recognized by the 2013 Nobel Prize in Chemistry.</li>
+    </ul>
+
+    <h3>Two flavors, and the catches</h3>
+    <p><strong>Born–Oppenheimer MD</strong> fully re-solves the electrons at every step. In 1985 Roberto Car and Michele Parrinello found a shortcut: treat the electrons' state as extra variables that move along with the nuclei, so it stays close to the right answer without being re-solved from scratch each step. <strong>Car–Parrinello MD</strong> made AIMD practical and is still widely used.</p>
+    <p>AIMD isn't exact. DFT involves an approximation of its own (the choice of "functional"), and the nuclei are still treated as classical balls, so quantum effects of the nuclei, such as zero-point vibration and tunneling, are missing unless more expensive methods (path-integral MD) are added. It's also slow: typically a few hundred atoms for tens to hundreds of picoseconds.</p>
+  </div>
+</section>
+
+<section id="tradeoff">
+  <div class="wrap">
+    <span class="secnum">08</span>
+    <h2>The trade-off, and where AI comes in</h2>
+    <p>Every method trades accuracy against how big and how long a simulation can be. The cost of DFT grows roughly with the cube of the number of atoms: double the atoms and the work goes up about eightfold. A classical force field that ignores atoms beyond a cutoff distance grows roughly in proportion to the number of atoms.</p>
+    <canvas id="mapC" width="1000" height="560" aria-label="Map of typical system sizes and simulated times reachable by ab initio, machine-learned and classical molecular dynamics"></canvas>
+    <p class="chartlabel" style="margin-top:8px">Rough, typical ranges on log scales. The edges keep moving as computers get faster.</p>
+    <h3>Machine-learned potentials</h3>
+    <p>The newest approach sits in between. Run a few thousand DFT calculations on small snapshots of your system, then train a neural network to predict the energy and forces from the atom positions. Then run MD with the network in place of DFT. Done well, this gets close to DFT accuracy at a cost much nearer to a classical force field, and bonds can still break. Jörg Behler and Michele Parrinello (the same Parrinello) pioneered the idea in 2007, and it's now one of the most active areas of the field.</p>
+    <p class="callout">This connects back to Bishop. The network is learning a function over a space with thousands of dimensions (three coordinates per atom) from a limited set of samples. It has the same weakness as any machine-learning model: it's only trustworthy for arrangements that resemble its training data, and it can fail badly when a simulation wanders somewhere new. Careful practitioners keep checking it against fresh DFT calculations.</p>
+  </div>
+</section>
+
+<section id="compare">
+  <div class="wrap">
+    <span class="secnum">09</span>
+    <h2>Side by side</h2>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th></th><th class="ff">Classical MD</th><th class="ai">Ab initio MD</th><th class="ml">Machine-learned potentials</th></tr></thead>
+        <tbody>
+          <tr><th>Forces come from</th><td>A fitted formula (springs, charges, Lennard-Jones)</td><td>The quantum mechanics of the electrons, solved at every step (usually with DFT)</td><td>A neural network trained on DFT results</td></tr>
+          <tr><th>Can bonds break?</th><td>No (except special reactive force fields)</td><td>Yes</td><td>Yes, if the training data covered it</td></tr>
+          <tr><th>Electrons</th><td>Left out; atoms carry fixed charges</td><td>Included explicitly</td><td>Included indirectly, through what the network learned</td></tr>
+          <tr><th>Typical size</th><td>Thousands to millions of atoms, or more</td><td>Tens to about a thousand atoms</td><td>Hundreds to millions of atoms</td></tr>
+          <tr><th>Typical length</th><td>Nanoseconds to microseconds</td><td>Picoseconds to about a nanosecond</td><td>Up to nanoseconds or longer</td></tr>
+          <tr><th>Main limitation</th><td>Only as good as its formula and fitted numbers</td><td>Very expensive, and DFT is itself approximate</td><td>Only trustworthy close to its training data</td></tr>
+          <tr><th>Typical uses</th><td>Proteins, drugs, membranes, polymers, liquids</td><td>Reactions, catalysis, water and acids, extreme conditions</td><td>Big or long simulations that need near-quantum accuracy</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<footer>
+  <div class="wrap">Everything on this page runs in your browser with no internet connection needed. The simulations are simplified for clarity: a 2D box of argon-like atoms, a single O–H bond, and a pre-computed H₂ energy curve standing in for a live quantum calculation.</div>
+</footer>
+
+<script>
+(() => {
+'use strict';
+const root = document.documentElement;
+const $ = id => document.getElementById(id);
+const CS = n => getComputedStyle(root).getPropertyValue(n).trim();
+const fmt = (n, d = 0) => Number(n).toLocaleString('en-US', { minimumFractionDigits: d, maximumFractionDigits: d });
+const PI = Math.PI;
+const FONT = s => `${s}px system-ui, -apple-system, "Segoe UI", Roboto, sans-serif`;
+const hex = h => { h = h.replace('#', ''); if (h.length === 3) h = h.split('').map(c => c + c).join(''); return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16)]; };
+const rgba = (h, a) => { const [r, g, b] = hex(h); return `rgba(${r},${g},${b},${a})`; };
+const niceStep = (range, n) => { const raw = range / n, p = 10 ** Math.floor(Math.log10(raw)), m = raw / p; return (m < 1.5 ? 1 : m < 3.5 ? 2 : m < 7.5 ? 5 : 10) * p; };
+
+let K = {}, LUT = [];
+const NB = 24;
+function readColors() {
+  for (const n of ['ink', 'muted', 'faint', 'line', 'grid', 'panel', 'accent', 'rep', 'att', 'ke', 'pe', 'ff', 'ai', 'ml', 's0', 's1', 's2', 's3', 's4', 'oxy', 'hyd']) K[n] = CS('--' + n);
+  const s = [K.s0, K.s1, K.s2, K.s3, K.s4].map(hex), ns = s.length - 1; LUT = [];
+  for (let i = 0; i < NB; i++) {
+    const t = i / (NB - 1) * ns, seg = Math.min(ns - 1, Math.floor(t)), u = t - seg, a = s[seg], b = s[seg + 1];
+    LUT.push(`rgb(${Math.round(a[0] + (b[0] - a[0]) * u)},${Math.round(a[1] + (b[1] - a[1]) * u)},${Math.round(a[2] + (b[2] - a[2]) * u)})`);
+  }
+}
+readColors();
+
+const vis = { box: true, timestep: true, aimd: true };
+if ('IntersectionObserver' in window) {
+  const io = new IntersectionObserver(es => es.forEach(e => { vis[e.target.id] = e.isIntersecting; }), { rootMargin: '150px' });
+  Object.keys(vis).forEach(id => io.observe($(id)));
+}
+
+function arrow(c, x1, y1, x2, y2, col, w) {
+  const ang = Math.atan2(y2 - y1, x2 - x1), hl = 8 + w * 2;
+  c.strokeStyle = col; c.fillStyle = col; c.lineWidth = w; c.lineCap = 'round';
+  c.beginPath(); c.moveTo(x1, y1); c.lineTo(x2 - Math.cos(ang) * hl * 0.6, y2 - Math.sin(ang) * hl * 0.6); c.stroke();
+  c.beginPath(); c.moveTo(x2, y2);
+  c.lineTo(x2 - hl * Math.cos(ang - 0.45), y2 - hl * Math.sin(ang - 0.45));
+  c.lineTo(x2 - hl * Math.cos(ang + 0.45), y2 - hl * Math.sin(ang + 0.45));
+  c.closePath(); c.fill();
+}
+
+/* argon units */
+const AR = { sig: 3.405, eps: 10.32, fpn: 4.86, tk: 119.8, tau: 2.156 };
+
+/* ================= 2. Lennard-Jones ================= */
+const ljC = $('ljCanvas'), ljX = ljC.getContext('2d');
+const LJP = { L: 92, R: 30, T: 250, B: 70, rmin: 0.85, rmax: 3.0, umin: -1.3, umax: 2.0, s: 118, x0: 250, by: 120 };
+let ljR = 1.6;
+const ljU = r => { const s6 = r ** -6; return 4 * (s6 * s6 - s6); };
+const ljF = r => { const s6 = r ** -6; return 24 * (2 * s6 * s6 - s6) / r; };
+const RMIN = 2 ** (1 / 6);
+
+function drawLJ() {
+  const c = ljX, W = ljC.width, H = ljC.height, P = LJP, w = W - P.L - P.R, h = H - P.T - P.B;
+  const lx = r => P.L + (r - P.rmin) / (P.rmax - P.rmin) * w, ly = u => P.T + (P.umax - u) / (P.umax - P.umin) * h;
+  c.clearRect(0, 0, W, H);
+  const xa = P.x0, xb = P.x0 + ljR * P.s, R0 = 0.5 * P.s, F = ljF(ljR), U = ljU(ljR);
+  for (const x of [xa, xb]) {
+    c.beginPath(); c.arc(x, P.by, R0, 0, 2 * PI); c.fillStyle = rgba(K.accent, 0.13); c.fill();
+    c.strokeStyle = rgba(K.accent, 0.55); c.lineWidth = 2; c.stroke();
+  }
+  for (const x of [xa, xb]) { c.beginPath(); c.arc(x, P.by, 7, 0, 2 * PI); c.fillStyle = K.ink; c.fill(); }
+  c.font = FONT(20); c.fillStyle = K.muted; c.textAlign = 'center'; c.textBaseline = 'top';
+  c.fillText('fixed', xa, P.by + R0 + 10); c.fillText('drag me', xb, P.by + R0 + 10);
+  c.textBaseline = 'bottom'; c.fillStyle = K.ink;
+  c.fillText(`r = ${(ljR * AR.sig).toFixed(2)} Å`, (xa + xb) / 2, P.by - R0 - 8);
+  if (Math.abs(F) > 0.03) {
+    const dir = Math.sign(F), col = F > 0 ? K.rep : K.att;
+    let len = 30 + 140 * Math.tanh(Math.abs(F) / 1.6);
+    if (dir < 0) len = Math.min(len, xb - xa - 40);
+    const x1 = xb + dir * 12, x2 = xb + dir * (12 + len);
+    arrow(c, x1, P.by, x2, P.by, col, 5);
+    c.fillStyle = col; c.font = FONT(20);
+    if (dir > 0) { c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText('pushed away', x2 + 10, P.by); }
+    else { c.textAlign = 'left'; c.textBaseline = 'middle'; c.fillText('pulled back', xb + R0 + 12, P.by); }
+  } else {
+    c.fillStyle = K.muted; c.textAlign = 'left'; c.textBaseline = 'middle'; c.font = FONT(20);
+    c.fillText('no force', xb + R0 + 12, P.by);
+  }
+  c.font = FONT(19); c.lineWidth = 1; c.strokeStyle = K.grid; c.fillStyle = K.muted;
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (const m of [-10, 0, 10, 20]) {
+    const Y = ly(m / AR.eps); c.beginPath(); c.moveTo(P.L, Y); c.lineTo(P.L + w, Y); c.stroke();
+    c.fillText(m === 0 ? '0' : (m > 0 ? '+' : '−') + Math.abs(m), P.L - 10, Y);
+  }
+  c.save(); c.translate(24, P.T + h / 2); c.rotate(-PI / 2); c.textAlign = 'center'; c.fillText('energy (meV)', 0, 0); c.restore();
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let A = 3; A <= 10; A++) {
+    const r = A / AR.sig; if (r < P.rmin) continue;
+    const X = lx(r); c.beginPath(); c.moveTo(X, P.T); c.lineTo(X, P.T + h); c.stroke();
+    c.fillText(String(A), X, P.T + h + 10);
+  }
+  c.fillText('distance between the atoms (Å)', P.L + w / 2, P.T + h + 38);
+  c.strokeStyle = K.faint; c.lineWidth = 1.5; c.beginPath(); c.moveTo(P.L, ly(0)); c.lineTo(P.L + w, ly(0)); c.stroke();
+  c.setLineDash([6, 6]); c.beginPath(); c.moveTo(lx(RMIN), P.T); c.lineTo(lx(RMIN), P.T + h); c.stroke(); c.setLineDash([]);
+  c.fillStyle = K.muted; c.textAlign = 'left'; c.textBaseline = 'top';
+  c.fillText('lowest energy at 3.8 Å', lx(RMIN) + 8, P.T + 6);
+  c.fillStyle = K.rep; c.textBaseline = 'middle';
+  c.fillText('← repulsion: the clouds overlap', lx(RMIN) + 12, ly(1.45));
+  c.fillStyle = K.att;
+  c.fillText('attraction', lx(1.42), ly(-0.78)); c.fillText('(van der Waals)', lx(1.42), ly(-0.78) + 24);
+  c.fillStyle = K.muted; c.textAlign = 'center';
+  c.fillText('too far apart to matter', lx(2.55), ly(0.3));
+  c.save(); c.beginPath(); c.rect(P.L, P.T, w, h); c.clip();
+  c.beginPath();
+  for (let i = 0; i <= 500; i++) { const r = P.rmin + i / 500 * (P.rmax - P.rmin), Y = Math.max(P.T - 50, ly(ljU(r))); i ? c.lineTo(lx(r), Y) : c.moveTo(lx(r), Y); }
+  c.strokeStyle = K.accent; c.lineWidth = 3.5; c.lineJoin = 'round'; c.stroke();
+  const d = 0.13, sl = -F;
+  c.beginPath(); c.moveTo(lx(ljR - d), ly(U - sl * d)); c.lineTo(lx(ljR + d), ly(U + sl * d));
+  c.strokeStyle = K.ink; c.lineWidth = 2; c.setLineDash([5, 5]); c.stroke(); c.setLineDash([]);
+  c.beginPath(); c.arc(lx(ljR), Math.max(P.T + 6, ly(U)), 9, 0, 2 * PI); c.fillStyle = K.ink; c.fill();
+  c.strokeStyle = K.panel; c.lineWidth = 3; c.stroke();
+  c.restore();
+}
+
+function ljStats() {
+  const U = ljU(ljR), F = ljF(ljR);
+  $('ljSOut').textContent = (ljR * AR.sig).toFixed(2) + ' Å';
+  $('ljD').textContent = (ljR * AR.sig).toFixed(2) + ' Å';
+  $('ljE').textContent = (U >= 0 ? '+' : '−') + Math.abs(U * AR.eps).toFixed(2) + ' meV';
+  $('ljFo').textContent = Math.abs(F) < 0.03 ? 'almost none' : `${Math.abs(F * AR.fpn).toFixed(Math.abs(F * AR.fpn) < 10 ? 2 : 0)} pN, ${F > 0 ? 'pushing apart' : 'pulling together'}`;
+  let note;
+  if (ljR < RMIN - 0.04) note = 'The electron clouds overlap, so the atoms repel. The closer they get, the more violently they push apart.';
+  else if (ljR <= RMIN + 0.04) note = 'The bottom of the energy well: the push and pull balance. Neighbors in a liquid or crystal sit near this distance.';
+  else if (ljR < 2.2) note = 'Attraction: the atom is pulled back toward the bottom of the well. This weak pull is what holds liquid argon together.';
+  else note = 'Far apart: the curve is almost flat, so there is almost no force.';
+  $('ljNote').textContent = note;
+}
+
+function ljPointer(e) {
+  const rect = ljC.getBoundingClientRect(), X = (e.clientX - rect.left) * ljC.width / rect.width, Yc = (e.clientY - rect.top) * ljC.height / rect.height;
+  const w = ljC.width - LJP.L - LJP.R;
+  let r = Yc < LJP.T - 20 ? (X - LJP.x0) / LJP.s : LJP.rmin + (X - LJP.L) / w * (LJP.rmax - LJP.rmin);
+  ljR = Math.min(3, Math.max(0.88, r)); $('ljS').value = ljR; drawLJ(); ljStats();
+}
+let ljDrag = false;
+ljC.addEventListener('pointerdown', e => { ljDrag = true; try { ljC.setPointerCapture(e.pointerId); } catch (_) {} ljPointer(e); });
+ljC.addEventListener('pointermove', e => { if (ljDrag) ljPointer(e); });
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => ljC.addEventListener(t, () => { ljDrag = false; }));
+$('ljS').addEventListener('input', e => { ljR = +e.target.value; drawLJ(); ljStats(); });
+
+/* ================= 3. MD box ================= */
+const DT = 0.005, RC = 2.5, RC2 = RC * RC, UC = 4 * (RC ** -12 - RC ** -6), TAU_T = 0.25;
+const mdC = $('mdCanvas'), mdX = mdC.getContext('2d');
+const eC = $('mdE'), eX = eC.getContext('2d'), gC = $('mdG'), gX = gC.getContext('2d');
+let N = 0, Lx = 1, Ly = 1, X, Y, VX, VY, FX, FY, head = null, next = null;
+let PE = 0, KE = 0, steps = 0, tag = 0, tux = 0, tuy = 0, trail = [], mdRunning = true, Tt = 0.6, thermo = true, lastInit = [0.75, 0.6, 1.5];
+const HMAX = 600, hist = { ke: [], pe: [], tot: [] };
+const GB = 100, GDR = 0.05; const gAvg = new Float64Array(GB); let gHas = false, gMaxR = 5;
+let view = { s: 1, bx: 0, by: 0 };
+const PRESETS = {
+  crystal: { rho: 0.85, T: 0.25, T0: 0.25 },
+  liquid: { rho: 0.75, T: 0.6, T0: 1.5 },
+  gas: { rho: 0.08, T: 1.5, T0: 1.5 },
+  vapor: { rho: 0.3, T: 0.3, T0: 1.2 }
+};
+
+function gauss() { let u = 0; while (u === 0) u = Math.random(); return Math.sqrt(-2 * Math.log(u)) * Math.cos(2 * PI * Math.random()); }
+
+function forces() {
+  FX.fill(0); FY.fill(0);
+  let pe = 0;
+  const ncx = Math.floor(Lx / RC), ncy = Math.floor(Ly / RC), nc = ncx * ncy;
+  if (!head || head.length !== nc) head = new Int32Array(nc);
+  if (!next || next.length !== N) next = new Int32Array(N);
+  head.fill(-1);
+  for (let i = 0; i < N; i++) {
+    let cx = Math.floor(X[i] / Lx * ncx), cy = Math.floor(Y[i] / Ly * ncy);
+    if (cx >= ncx) cx = ncx - 1; if (cy >= ncy) cy = ncy - 1; if (cx < 0) cx = 0; if (cy < 0) cy = 0;
+    const c = cy * ncx + cx; next[i] = head[c]; head[c] = i;
+  }
+  const OFF = [0, 0, 1, 0, -1, 1, 0, 1, 1, 1];
+  for (let cy = 0; cy < ncy; cy++) for (let cx = 0; cx < ncx; cx++) {
+    const c = cy * ncx + cx;
+    for (let o = 0; o < 10; o += 2) {
+      const c2 = ((cy + OFF[o + 1] + ncy) % ncy) * ncx + ((cx + OFF[o] + ncx) % ncx);
+      for (let i = head[c]; i >= 0; i = next[i]) {
+        const xi = X[i], yi = Y[i];
+        for (let j = (o === 0 ? next[i] : head[c2]); j >= 0; j = next[j]) {
+          let dx = xi - X[j], dy = yi - Y[j];
+          dx -= Lx * Math.round(dx / Lx); dy -= Ly * Math.round(dy / Ly);
+          let r2 = dx * dx + dy * dy;
+          if (r2 >= RC2) continue;
+          if (r2 < 0.4) r2 = 0.4;
+          const ir2 = 1 / r2, ir6 = ir2 * ir2 * ir2, f = 48 * ir2 * ir6 * (ir6 - 0.5);
+          FX[i] += f * dx; FY[i] += f * dy; FX[j] -= f * dx; FY[j] -= f * dy;
+          pe += 4 * ir6 * (ir6 - 1) - UC;
+        }
+      }
+    }
+  }
+  return pe;
+}
+
+function kinetic() { let s = 0; for (let i = 0; i < N; i++) s += VX[i] * VX[i] + VY[i] * VY[i]; return 0.5 * s; }
+
+function initSim(rho, Ttarget, T0) {
+  lastInit = [rho, Ttarget, T0];
+  const a = Math.sqrt(2 / (Math.sqrt(3) * rho)), hy = a * Math.sqrt(3) / 2;
+  const nx = Math.max(4, Math.round(20 / a)), ny = Math.max(4, 2 * Math.round(20 / hy / 2));
+  Lx = nx * a; Ly = ny * hy; N = nx * ny;
+  X = new Float64Array(N); Y = new Float64Array(N); VX = new Float64Array(N); VY = new Float64Array(N); FX = new Float64Array(N); FY = new Float64Array(N);
+  let k = 0;
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { X[k] = (i + 0.25 + 0.5 * (j & 1)) * a; Y[k] = (j + 0.5) * hy; k++; }
+  let mx = 0, my = 0;
+  for (let i = 0; i < N; i++) { VX[i] = gauss(); VY[i] = gauss(); mx += VX[i]; my += VY[i]; }
+  mx /= N; my /= N; let s2 = 0;
+  for (let i = 0; i < N; i++) { VX[i] -= mx; VY[i] -= my; s2 += VX[i] * VX[i] + VY[i] * VY[i]; }
+  const f = Math.sqrt(T0 * (2 * N - 2) / s2);
+  for (let i = 0; i < N; i++) { VX[i] *= f; VY[i] *= f; }
+  Tt = Ttarget; $('mdTemp').value = Ttarget; $('mdRho').value = rho; mdLabels();
+  PE = forces(); KE = kinetic(); steps = 0;
+  let best = Infinity;
+  for (let i = 0; i < N; i++) { const d = (X[i] - Lx / 2) ** 2 + (Y[i] - Ly / 2) ** 2; if (d < best) { best = d; tag = i; } }
+  tux = X[tag]; tuy = Y[tag]; trail = [];
+  hist.ke = []; hist.pe = []; hist.tot = []; gHas = false;
+  recordFrame(); updateG();
+}
+
+function step() {
+  const h = 0.5 * DT;
+  for (let i = 0; i < N; i++) {
+    VX[i] += h * FX[i]; VY[i] += h * FY[i];
+    let x = X[i] + DT * VX[i], y = Y[i] + DT * VY[i];
+    x -= Lx * Math.floor(x / Lx); y -= Ly * Math.floor(y / Ly);
+    X[i] = x; Y[i] = y;
+  }
+  tux += DT * VX[tag]; tuy += DT * VY[tag];
+  PE = forces();
+  let s2 = 0;
+  for (let i = 0; i < N; i++) { VX[i] += h * FX[i]; VY[i] += h * FY[i]; s2 += VX[i] * VX[i] + VY[i] * VY[i]; }
+  KE = 0.5 * s2;
+  if (thermo) {
+    const T = KE / (N - 1);
+    if (T > 0) {
+      let lam = Math.sqrt(1 + (DT / TAU_T) * (Tt / T - 1)); lam = Math.min(1.05, Math.max(0.95, lam));
+      for (let i = 0; i < N; i++) { VX[i] *= lam; VY[i] *= lam; }
+      KE *= lam * lam;
+    }
+  }
+  steps++;
+}
+
+function recordFrame() {
+  hist.ke.push(KE / N * AR.eps); hist.pe.push(PE / N * AR.eps); hist.tot.push((KE + PE) / N * AR.eps);
+  if (hist.ke.length > HMAX) { hist.ke.shift(); hist.pe.shift(); hist.tot.shift(); }
+}
+
+function updateG() {
+  const rmax = Math.min(GB * GDR, Lx / 2, Ly / 2), rm2 = rmax * rmax, hcount = new Float64Array(GB);
+  for (let i = 0; i < N - 1; i++) {
+    const xi = X[i], yi = Y[i];
+    for (let j = i + 1; j < N; j++) {
+      let dx = xi - X[j], dy = yi - Y[j];
+      dx -= Lx * Math.round(dx / Lx); dy -= Ly * Math.round(dy / Ly);
+      const r2 = dx * dx + dy * dy;
+      if (r2 < rm2) hcount[(Math.sqrt(r2) / GDR) | 0] += 2;
+    }
+  }
+  const rho = N / (Lx * Ly), nb = Math.floor(rmax / GDR); gMaxR = nb * GDR;
+  for (let b = 0; b < GB; b++) {
+    const shell = PI * GDR * GDR * ((b + 1) ** 2 - b ** 2), g = b < nb ? hcount[b] / (N * rho * shell) : 0;
+    gAvg[b] = gHas ? 0.94 * gAvg[b] + 0.06 * g : g;
+  }
+  gHas = true;
+}
+
+function drawSim() {
+  const c = mdX, W = mdC.width, H = mdC.height, tiles = $('mdTiles').checked, sp = tiles ? 3 : 1;
+  const s = Math.min((W - 30) / (Lx * sp), (H - 30) / (Ly * sp));
+  const ox = (W - s * Lx * sp) / 2, oy = (H - s * Ly * sp) / 2;
+  const bx = ox + (tiles ? s * Lx : 0), by = oy + (tiles ? s * Ly : 0);
+  view = { s, bx, by };
+  c.clearRect(0, 0, W, H);
+  const rad = 0.48 * s, edge = 0.6;
+  const inner = [], outer = [];
+  for (let b = 0; b < NB; b++) { inner.push(new Path2D()); outer.push(new Path2D()); }
+  for (let i = 0; i < N; i++) {
+    const spd = Math.sqrt(VX[i] * VX[i] + VY[i] * VY[i]), b = Math.min(NB - 1, (spd / 2.8 * NB) | 0);
+    for (let ix = -1; ix <= 1; ix++) for (let iy = -1; iy <= 1; iy++) {
+      const x = X[i] + ix * Lx, y = Y[i] + iy * Ly, central = ix === 0 && iy === 0;
+      if (!tiles && !central && (x < -edge || x > Lx + edge || y < -edge || y > Ly + edge)) continue;
+      const P = (central || !tiles) ? inner[b] : outer[b], px = bx + x * s, py = by + y * s;
+      P.moveTo(px + rad, py); P.arc(px, py, rad, 0, 2 * PI);
+    }
+  }
+  c.save();
+  c.beginPath();
+  if (tiles) c.rect(ox, oy, 3 * Lx * s, 3 * Ly * s); else c.rect(bx, by, Lx * s, Ly * s);
+  c.clip();
+  if (tiles) { c.globalAlpha = 0.3; for (let b = 0; b < NB; b++) { c.fillStyle = LUT[b]; c.fill(outer[b]); } c.globalAlpha = 1; }
+  for (let b = 0; b < NB; b++) { c.fillStyle = LUT[b]; c.fill(inner[b]); }
+  const tx = bx + X[tag] * s, ty = by + Y[tag] * s;
+  if (trail.length > 2) {
+    const shx = X[tag] - tux, shy = Y[tag] - tuy;
+    c.beginPath();
+    for (let k = 0; k < trail.length; k += 2) { const px = bx + (trail[k] + shx) * s, py = by + (trail[k + 1] + shy) * s; k ? c.lineTo(px, py) : c.moveTo(px, py); }
+    c.lineTo(tx, ty);
+    c.strokeStyle = rgba(K.ink, 0.5); c.lineWidth = 2.5; c.lineJoin = 'round'; c.stroke();
+  }
+  if ($('mdForces').checked) {
+    c.lineCap = 'round';
+    for (let j = 0; j < N; j++) {
+      if (j === tag) continue;
+      let dx = X[j] - X[tag], dy = Y[j] - Y[tag];
+      dx -= Lx * Math.round(dx / Lx); dy -= Ly * Math.round(dy / Ly);
+      const r2 = dx * dx + dy * dy; if (r2 >= RC2) continue;
+      const ir2 = 1 / Math.max(r2, 0.4), ir6 = ir2 * ir2 * ir2, f = 48 * ir2 * ir6 * (ir6 - 0.5), Fm = Math.abs(f) * Math.sqrt(r2);
+      if (Fm < 0.05) continue;
+      c.strokeStyle = f > 0 ? K.rep : K.att; c.lineWidth = 1.5 + 5 * Math.tanh(Fm / 4); c.globalAlpha = 0.9;
+      c.beginPath(); c.moveTo(tx, ty); c.lineTo(tx + dx * s, ty + dy * s); c.stroke();
+    }
+    c.globalAlpha = 1;
+  }
+  c.beginPath(); c.arc(tx, ty, rad + 3, 0, 2 * PI); c.strokeStyle = K.ink; c.lineWidth = 3; c.stroke();
+  c.restore();
+  c.strokeStyle = tiles ? K.ink : K.faint; c.lineWidth = tiles ? 2.5 : 1.5; c.strokeRect(bx, by, Lx * s, Ly * s);
+}
+
+function drawEnergy() {
+  const c = eX, W = eC.width, H = eC.height, L = 92, R = 20, T = 20, B = 56, w = W - L - R, h = H - T - B;
+  c.clearRect(0, 0, W, H);
+  const n = hist.ke.length; if (!n) return;
+  let lo = Infinity, hi = -Infinity;
+  for (const arr of [hist.ke, hist.pe, hist.tot]) for (const v of arr) { if (v < lo) lo = v; if (v > hi) hi = v; }
+  const pad = Math.max((hi - lo) * 0.1, 0.5); lo -= pad; hi += pad;
+  const st = niceStep(hi - lo, 4), ly = v => T + (hi - v) / (hi - lo) * h, lx = i => L + i / (HMAX - 1) * w;
+  c.font = FONT(19); c.lineWidth = 1; c.strokeStyle = K.grid; c.fillStyle = K.muted; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let v = Math.ceil(lo / st) * st; v <= hi; v += st) {
+    const Y = ly(v); c.beginPath(); c.moveTo(L, Y); c.lineTo(L + w, Y); c.stroke();
+    const lab = st < 1 ? v.toFixed(1) : v.toFixed(0);
+    c.fillText(lab.replace('-', '−'), L - 10, Y);
+  }
+  c.save(); c.translate(22, T + h / 2); c.rotate(-PI / 2); c.textAlign = 'center'; c.fillText('meV per atom', 0, 0); c.restore();
+  c.textAlign = 'center'; c.textBaseline = 'top'; c.fillText('time →', L + w / 2, T + h + 14);
+  c.textAlign = 'right'; c.fillText('now', L + w, T + h + 14);
+  c.save(); c.beginPath(); c.rect(L, T, w, h); c.clip();
+  const off = HMAX - n;
+  for (const [arr, col, lw] of [[hist.ke, K.ke, 2.5], [hist.pe, K.pe, 2.5], [hist.tot, K.ink, 3]]) {
+    c.beginPath();
+    for (let i = 0; i < n; i++) { const X0 = lx(i + off), Y0 = ly(arr[i]); i ? c.lineTo(X0, Y0) : c.moveTo(X0, Y0); }
+    c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = 'round'; c.stroke();
+  }
+  c.restore();
+}
+
+function drawG() {
+  const c = gX, W = gC.width, H = gC.height, L = 64, R = 20, T = 20, B = 56, w = W - L - R, h = H - T - B;
+  c.clearRect(0, 0, W, H);
+  const rmaxS = 5, nb = Math.floor(gMaxR / GDR);
+  let gm = 0; for (let b = 0; b < nb; b++) gm = Math.max(gm, gAvg[b]);
+  const ymax = Math.max(3, Math.ceil(gm * 1.1));
+  const lx = r => L + r / rmaxS * w, ly = g => T + (ymax - g) / ymax * h;
+  c.font = FONT(19); c.lineWidth = 1; c.strokeStyle = K.grid; c.fillStyle = K.muted;
+  const yst = ymax > 8 ? 2 : 1;
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let g = 0; g <= ymax; g += yst) { const Y = ly(g); c.beginPath(); c.moveTo(L, Y); c.lineTo(L + w, Y); c.stroke(); c.fillText(String(g), L - 10, Y); }
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let A = 0; A <= 16; A += 4) { const X0 = lx(A / AR.sig); c.beginPath(); c.moveTo(X0, T); c.lineTo(X0, T + h); c.stroke(); c.fillText(String(A), X0, T + h + 10); }
+  c.fillText('distance from an atom (Å)', L + w / 2, T + h + 32);
+  c.setLineDash([7, 6]); c.strokeStyle = K.faint; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(L, ly(1)); c.lineTo(L + w, ly(1)); c.stroke(); c.setLineDash([]);
+  if (!nb) return;
+  c.save(); c.beginPath(); c.rect(L, T, w, h); c.clip();
+  c.beginPath(); c.moveTo(lx(0), ly(0));
+  for (let b = 0; b < nb; b++) c.lineTo(lx((b + 0.5) * GDR), ly(gAvg[b]));
+  c.lineTo(lx((nb - 0.5) * GDR), ly(0)); c.closePath(); c.fillStyle = rgba(K.accent, 0.13); c.fill();
+  c.beginPath();
+  for (let b = 0; b < nb; b++) { const X0 = lx((b + 0.5) * GDR), Y0 = ly(gAvg[b]); b ? c.lineTo(X0, Y0) : c.moveTo(X0, Y0); }
+  c.strokeStyle = K.accent; c.lineWidth = 2.5; c.lineJoin = 'round'; c.stroke();
+  c.restore();
+}
+
+function mdLabels() {
+  $('mdTempOut').textContent = Math.round(+$('mdTemp').value * AR.tk) + ' K';
+  $('mdRhoOut').textContent = (+$('mdRho').value).toFixed(2);
+  $('mdSpeedOut').textContent = $('mdSpeed').value + ' steps / frame';
+}
+
+function mdStats() {
+  const T = KE / (N - 1), t = steps * DT * AR.tau;
+  $('mdTk').textContent = Math.round(T * AR.tk) + ' K';
+  $('mdTime').textContent = (t < 100 ? t.toFixed(1) : fmt(t)) + ' ps';
+  $('mdN').textContent = String(N);
+  $('mdEt').textContent = ((KE + PE) / N * AR.eps).toFixed(2).replace('-', '−') + ' meV';
+}
+
+function mdNote() {
+  $('mdNote').textContent = thermo
+    ? 'Thermostat on: speeds are gently nudged toward the target temperature.'
+    : 'Thermostat off: no energy enters or leaves, so the total energy line stays flat.';
+}
+
+function simTick() {
+  if (mdRunning) {
+    const n = +$('mdSpeed').value;
+    for (let k = 0; k < n; k++) step();
+    trail.push(tux, tuy); if (trail.length > 2400) trail.splice(0, trail.length - 2400);
+    recordFrame(); updateG();
+  }
+  drawSim(); drawEnergy(); drawG(); mdStats();
+}
+
+function setMdRun(on) { mdRunning = on; const b = $('mdRun'); b.textContent = on ? 'Pause' : 'Play'; b.classList.toggle('on', on); }
+function setChip(name) { document.querySelectorAll('[data-preset]').forEach(b => b.classList.toggle('active', b.dataset.preset === name)); }
+
+document.querySelectorAll('[data-preset]').forEach(b => b.addEventListener('click', () => {
+  const p = PRESETS[b.dataset.preset]; setChip(b.dataset.preset);
+  $('mdThermo').checked = true; thermo = true; $('mdTemp').disabled = false; $('mdTempLbl').classList.remove('off'); mdNote();
+  initSim(p.rho, p.T, p.T0); setMdRun(true);
+}));
+$('mdRun').addEventListener('click', () => setMdRun(!mdRunning));
+$('mdReset').addEventListener('click', () => { initSim(...lastInit); setMdRun(true); });
+$('mdTemp').addEventListener('input', e => { Tt = +e.target.value; mdLabels(); });
+$('mdThermo').addEventListener('change', e => {
+  thermo = e.target.checked; $('mdTemp').disabled = !thermo; $('mdTempLbl').classList.toggle('off', !thermo); mdNote();
+});
+$('mdRho').addEventListener('input', mdLabels);
+$('mdRho').addEventListener('change', e => { setChip(null); initSim(+e.target.value, Tt, Math.max(Tt, 1.0)); setMdRun(true); });
+$('mdSpeed').addEventListener('input', mdLabels);
+mdC.addEventListener('click', e => {
+  const r = mdC.getBoundingClientRect(), px = (e.clientX - r.left) * mdC.width / r.width, py = (e.clientY - r.top) * mdC.height / r.height;
+  let x = (px - view.bx) / view.s, y = (py - view.by) / view.s;
+  x -= Lx * Math.floor(x / Lx); y -= Ly * Math.floor(y / Ly);
+  let best = Infinity, bi = -1;
+  for (let i = 0; i < N; i++) {
+    let dx = X[i] - x, dy = Y[i] - y; dx -= Lx * Math.round(dx / Lx); dy -= Ly * Math.round(dy / Ly);
+    const d = dx * dx + dy * dy; if (d < best) { best = d; bi = i; }
+  }
+  if (bi >= 0 && best < 2.25) { tag = bi; tux = X[bi]; tuy = Y[bi]; trail = []; drawSim(); }
+});
+
+/* ================= 5. Time step ================= */
+const TS_P = 9.0, TS_W = 2 * PI / TS_P, TS_T = 90;
+const tsA = $('tsAnim'), tsAX = tsA.getContext('2d'), tsC = $('tsChart'), tsCX = tsC.getContext('2d');
+let tsRes = null, tsT = 0;
+
+function tsCompute() {
+  const dt = +$('tsDt').value, n = Math.ceil(TS_T / dt - 1e-9), w2 = TS_W * TS_W;
+  const e = new Float64Array(n + 1), v = new Float64Array(n + 1);
+  let xe = 1, ve = 0, xv = 1, vv = 0, vErr = 0; e[0] = 1; v[0] = 1;
+  for (let k = 1; k <= n; k++) {
+    const xe1 = xe + ve * dt, ve1 = ve - w2 * xe * dt; xe = xe1; ve = ve1;
+    const vh = vv - 0.5 * w2 * xv * dt; xv = xv + vh * dt; vv = vh - 0.5 * w2 * xv * dt;
+    e[k] = xe; v[k] = xv;
+    const Ev = xv * xv + vv * vv / w2; if (Math.abs(Ev - 1) > vErr) vErr = Math.abs(Ev - 1);
+  }
+  const Ee = xe * xe + ve * ve / w2;
+  tsRes = { dt, n, e, v, vErr, Ee };
+  $('tsDtOut').textContent = dt.toFixed(1) + ' fs';
+  $('tsSteps').textContent = (TS_P / dt).toFixed(1);
+  $('tsV').textContent = !isFinite(vErr) || vErr > 1 ? 'unstable: it flies apart' : `energy wobbles by up to ±${(100 * vErr).toFixed(vErr < 0.01 ? 2 : 0)}%, but never grows`;
+  $('tsEu').textContent = 'energy multiplied by ' + bigNum(Ee);
+}
+
+function bigNum(x) {
+  if (!isFinite(x)) return 'infinity';
+  if (x < 1000) return x < 10 ? x.toFixed(2) : x.toFixed(0);
+  const e = Math.floor(Math.log10(x)), m = x / 10 ** e;
+  const sup = String(e).split('').map(d => '⁰¹²³⁴⁵⁶⁷⁸⁹'[+d]).join('');
+  return `${m.toFixed(1)} × 10${sup}`;
+}
+
+function drawTsAnim() {
+  const c = tsAX, W = tsA.width, H = tsA.height;
+  c.clearRect(0, 0, W, H);
+  const xO = 330, bond = 250, amp = 95, rO = 30, rH = 18;
+  const k = Math.min(tsRes.n, Math.floor(tsT / tsRes.dt + 1e-9)), ex = Math.cos(TS_W * tsT);
+  const rows = [{ y: 95, name: 'Euler', arr: tsRes.e, col: K.rep }, { y: 220, name: 'Velocity Verlet', arr: tsRes.v, col: K.accent }];
+  c.font = FONT(19); c.fillStyle = K.muted; c.textAlign = 'right'; c.textBaseline = 'top';
+  c.fillText(`t = ${tsT.toFixed(1)} fs   ·   step ${k} of ${tsRes.n}`, W - 20, 12);
+  for (const row of rows) {
+    const d = row.arr[k], blown = !isFinite(d) || Math.abs(d) > 3.2;
+    const disp = blown ? 3.2 : Math.max(-2.3, d), xH = xO + bond + disp * amp;
+    c.font = 'bold ' + FONT(21); c.fillStyle = row.col; c.textAlign = 'left'; c.textBaseline = 'middle';
+    c.fillText(row.name, 20, row.y);
+    c.setLineDash([5, 5]); c.strokeStyle = K.faint; c.lineWidth = 2;
+    c.beginPath(); c.arc(xO + bond + ex * amp, row.y, rH, 0, 2 * PI); c.stroke();
+    c.strokeStyle = K.ink; c.lineWidth = 4; c.setLineDash(blown ? [8, 10] : []);
+    c.beginPath(); c.moveTo(xO + rO, row.y); c.lineTo(xH - rH, row.y); c.stroke(); c.setLineDash([]);
+    c.beginPath(); c.arc(xO, row.y, rO, 0, 2 * PI); c.fillStyle = K.oxy; c.fill();
+    c.beginPath(); c.arc(xH, row.y, rH, 0, 2 * PI); c.fillStyle = K.hyd; c.fill(); c.strokeStyle = K.ink; c.lineWidth = 2; c.stroke();
+    c.font = 'bold ' + FONT(20); c.textAlign = 'center'; c.fillStyle = '#ffffff'; c.fillText('O', xO, row.y + 1);
+    c.fillStyle = '#1b1a17'; c.fillText('H', xH, row.y + 1);
+    if (blown) { c.font = 'bold ' + FONT(19); c.fillStyle = K.rep; c.textAlign = 'center'; c.fillText('flew apart!', xH, row.y - rH - 18); }
+  }
+}
+
+function drawTsChart() {
+  const c = tsCX, W = tsC.width, H = tsC.height, L = 74, R = 20, T = 18, B = 62, w = W - L - R, h = H - T - B, ym = 2.4;
+  const lx = t => L + t / TS_T * w, ly = v => T + (ym - v) / (2 * ym) * h;
+  c.clearRect(0, 0, W, H);
+  c.font = FONT(19); c.lineWidth = 1; c.strokeStyle = K.grid; c.fillStyle = K.muted; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let v = -2; v <= 2; v++) { const Y = ly(v); c.beginPath(); c.moveTo(L, Y); c.lineTo(L + w, Y); c.stroke(); c.fillText(String(v).replace('-', '−'), L - 10, Y); }
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let t = 0; t <= TS_T; t += 9) { const X0 = lx(t); c.beginPath(); c.moveTo(X0, T); c.lineTo(X0, T + h); c.stroke(); c.fillText(String(t), X0, T + h + 10); }
+  c.fillText('time (fs); one gridline per vibration', L + w / 2, T + h + 34);
+  c.save(); c.beginPath(); c.rect(L, T, w, h); c.clip();
+  c.beginPath(); for (let i = 0; i <= 900; i++) { const t = i / 10; i ? c.lineTo(lx(t), ly(Math.cos(TS_W * t))) : c.moveTo(lx(t), ly(1)); }
+  c.setLineDash([6, 6]); c.strokeStyle = K.faint; c.lineWidth = 2; c.stroke(); c.setLineDash([]);
+  const { n, dt, e, v } = tsRes, clampV = y => Math.max(-50, Math.min(50, y));
+  const blowAt = [];
+  for (const [arr, col, lw] of [[e, K.rep, 2.5], [v, K.accent, 2.5]]) {
+    c.beginPath(); let kEnd = n;
+    for (let k = 0; k <= n; k++) {
+      const X0 = lx(k * dt), Y0 = ly(clampV(arr[k])); k ? c.lineTo(X0, Y0) : c.moveTo(X0, Y0);
+      if (!isFinite(arr[k]) || Math.abs(arr[k]) > ym) { kEnd = k; blowAt.push([X0, col]); break; }
+    }
+    c.strokeStyle = col; c.lineWidth = lw; c.lineJoin = 'round'; c.stroke();
+  }
+  if (n <= 200) { c.fillStyle = K.accent; for (let k = 0; k <= n; k++) { c.beginPath(); c.arc(lx(k * dt), ly(clampV(v[k])), 4, 0, 2 * PI); c.fill(); } }
+  c.strokeStyle = K.muted; c.lineWidth = 1.5; c.beginPath(); c.moveTo(lx(tsT), T); c.lineTo(lx(tsT), T + h); c.stroke();
+  c.restore();
+  c.save(); c.translate(22, T + h / 2); c.rotate(-PI / 2); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillStyle = K.muted; c.fillText('bond stretch', 0, 0); c.restore();
+  c.font = 'bold ' + FONT(19); c.textBaseline = 'top';
+  blowAt.forEach(([X0, col], i) => { c.fillStyle = col; c.textAlign = X0 > L + w - 200 ? 'right' : 'left'; c.fillText('flew apart here', X0 + (c.textAlign === 'left' ? 8 : -8), T + 4 + i * 24); });
+}
+
+$('tsDt').addEventListener('input', () => { tsCompute(); tsT = 0; });
+
+/* ================= 7. H2 bond breaking ================= */
+const H2 = { De: 4.746, a: 1.943, re: 0.741, mu: 0.504 }; H2.k = 2 * H2.De * H2.a * H2.a;
+const TU = 10.18;
+const fMorse = r => { const e = Math.exp(-H2.a * (r - H2.re)); return -2 * H2.De * H2.a * e * (1 - e); };
+const fSpring = r => -H2.k * (r - H2.re);
+const vMorse = r => { const e = Math.exp(-H2.a * (r - H2.re)); return H2.De * (1 - e) * (1 - e) - H2.De; };
+const vSpring = r => 0.5 * H2.k * (r - H2.re) ** 2 - H2.De;
+const h2A = $('h2Anim'), h2AX = h2A.getContext('2d'), h2C = $('h2Chart'), h2CX = h2C.getContext('2d');
+let h2 = null;
+
+function h2Kick() {
+  const E = +$('h2E').value, v0 = Math.sqrt(2 * E / H2.mu);
+  $('h2EOut').textContent = E.toFixed(1) + ' eV';
+  h2 = { E, t: 0, s: { r: H2.re, v: v0, rmax: H2.re, done: false }, q: { r: H2.re, v: v0, rmax: H2.re, done: false } };
+}
+
+function h2Advance(fs) {
+  const dfs = 0.02, dt = dfs / TU, n = Math.max(1, Math.round(fs / dfs));
+  for (let k = 0; k < n; k++) {
+    for (let m = 0; m < 2; m++) {
+      const st = m ? h2.q : h2.s, F = m ? fMorse : fSpring;
+      if (st.done) continue;
+      st.v += 0.5 * dt * F(st.r) / H2.mu; st.r += dt * st.v; st.v += 0.5 * dt * F(st.r) / H2.mu;
+      if (st.r > st.rmax) st.rmax = st.r;
+      if (st.r > 7) st.done = true;
+    }
+  }
+  h2.t += n * dfs;
+}
+
+function springPath(c, x1, x2, y, coils, amp) {
+  const len = x2 - x1; if (len < 8) return;
+  const lead = Math.min(12, len * 0.12), nseg = coils * 2;
+  c.beginPath(); c.moveTo(x1, y); c.lineTo(x1 + lead, y);
+  for (let i = 1; i <= nseg; i++) c.lineTo(x1 + lead + (len - 2 * lead) * (i - 0.5) / nseg, y + (i % 2 ? -amp : amp));
+  c.lineTo(x2 - lead, y); c.lineTo(x2, y); c.stroke();
+}
+
+function blob(c, x, y, R, col, a) {
+  const g = c.createRadialGradient(x, y, 0, x, y, R);
+  g.addColorStop(0, rgba(col, a)); g.addColorStop(1, rgba(col, 0));
+  c.fillStyle = g; c.beginPath(); c.arc(x, y, R, 0, 2 * PI); c.fill();
+}
+
+function drawH2() {
+  const c = h2AX, W = h2A.width, H = h2A.height, s = 80, cy = 145, half = W / 2;
+  c.clearRect(0, 0, W, H);
+  c.strokeStyle = K.line; c.lineWidth = 1.5; c.beginPath(); c.moveTo(half, 20); c.lineTo(half, H - 20); c.stroke();
+  c.font = 'bold ' + FONT(21); c.textAlign = 'center'; c.textBaseline = 'top';
+  c.fillStyle = K.ff; c.fillText('Force field: a spring', half / 2, 16);
+  c.fillStyle = K.ai; c.fillText('Ab initio: the electrons decide', half + half / 2, 16);
+  c.save(); c.beginPath(); c.rect(0, 0, half - 1, H); c.clip();
+  const cL = half / 2, rS = h2.s.r, a1 = cL - rS * s / 2, a2 = cL + rS * s / 2;
+  c.strokeStyle = K.ff; c.lineWidth = 3; c.lineJoin = 'round'; springPath(c, a1 + 16, a2 - 16, cy, 7, 11);
+  for (const x of [a1, a2]) { c.beginPath(); c.arc(x, cy, 18, 0, 2 * PI); c.fillStyle = K.hyd; c.fill(); c.strokeStyle = K.ink; c.lineWidth = 2; c.stroke(); }
+  c.font = 'bold ' + FONT(17); c.fillStyle = '#1b1a17'; c.textBaseline = 'middle';
+  for (const x of [a1, a2]) c.fillText('H', x, cy + 1);
+  c.restore();
+  c.save(); c.beginPath(); c.rect(half + 1, 0, half - 1, H); c.clip();
+  const cR = half + half / 2, rQ = h2.q.r, b1 = cR - rQ * s / 2, b2 = cR + rQ * s / 2, bw = Math.min(1, Math.exp(-1.7 * (rQ - H2.re)));
+  blob(c, b1, cy, 52, K.ai, 0.5 - 0.15 * bw); blob(c, b2, cy, 52, K.ai, 0.5 - 0.15 * bw);
+  if (bw > 0.02) {
+    c.save(); c.translate((b1 + b2) / 2, cy); c.scale(1, 0.6);
+    blob(c, 0, 0, rQ * s / 2 + 40, K.ai, 0.55 * bw); c.restore();
+  }
+  for (const x of [b1, b2]) { c.beginPath(); c.arc(x, cy, 7, 0, 2 * PI); c.fillStyle = K.ink; c.fill(); }
+  c.restore();
+  c.font = FONT(19); c.textAlign = 'center'; c.textBaseline = 'top';
+  c.fillStyle = K.muted;
+  c.fillText(`stretches to ${h2.s.rmax.toFixed(2)} Å, then springs back`, half / 2, 238);
+  c.fillText('it can never break', half / 2, 262);
+  const broke = h2.E > H2.De && (h2.q.done || h2.q.r > 2.5);
+  c.fillStyle = broke ? K.ai : K.muted; c.font = (broke ? 'bold ' : '') + FONT(19);
+  if (broke) { c.fillText('the bond broke:', half + half / 2, 238); c.fillText('two free hydrogen atoms', half + half / 2, 262); }
+  else { c.fillText(`stretches to ${h2.q.rmax.toFixed(2)} Å, the bond holds`, half + half / 2, 238); c.font = FONT(17); c.fillText('(the glow is a sketch of the electron cloud)', half + half / 2, 264); }
+}
+
+function drawH2Chart() {
+  const c = h2CX, W = h2C.width, H = h2C.height, L = 74, R = 24, T = 18, B = 64, w = W - L - R, h = H - T - B;
+  const r0 = 0.3, r1 = 4.0, u0 = -5.3, u1 = 3.0, lx = r => L + (r - r0) / (r1 - r0) * w, ly = u => T + (u1 - u) / (u1 - u0) * h;
+  c.clearRect(0, 0, W, H);
+  c.font = FONT(19); c.lineWidth = 1; c.strokeStyle = K.grid; c.fillStyle = K.muted; c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let u = -5; u <= 3; u++) { const Y = ly(u); c.beginPath(); c.moveTo(L, Y); c.lineTo(L + w, Y); c.stroke(); c.fillText(String(u).replace('-', '−'), L - 10, Y); }
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let r = 0.5; r <= 4.0001; r += 0.5) { const X0 = lx(r); c.beginPath(); c.moveTo(X0, T); c.lineTo(X0, T + h); c.stroke(); c.fillText(r.toFixed(1), X0, T + h + 10); }
+  c.fillText('distance between the two hydrogen nuclei (Å)', L + w / 2, T + h + 36);
+  c.save(); c.translate(22, T + h / 2); c.rotate(-PI / 2); c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('energy (eV)', 0, 0); c.restore();
+  c.strokeStyle = K.faint; c.lineWidth = 1.5; c.beginPath(); c.moveTo(L, ly(0)); c.lineTo(L + w, ly(0)); c.stroke();
+  c.fillStyle = K.muted; c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText('atoms far apart: 0 eV', L + w - 8, ly(0) - 6);
+  const xd = lx(3.75); arrow(c, xd, ly(-H2.De) - 2, xd, ly(0) + 4, K.muted, 2); arrow(c, xd, ly(0) + 4, xd, ly(-H2.De) - 2, K.muted, 2);
+  c.fillStyle = K.muted; c.textAlign = 'right'; c.textBaseline = 'middle'; c.fillText('4.7 eV to pull apart', xd - 12, ly(-2.4));
+  c.save(); c.beginPath(); c.rect(L, T, w, h); c.clip();
+  for (const [V, col] of [[vSpring, K.ff], [vMorse, K.ai]]) {
+    c.beginPath(); for (let i = 0; i <= 600; i++) { const r = r0 + i / 600 * (r1 - r0), Y0 = Math.max(T - 40, ly(V(r))); i ? c.lineTo(lx(r), Y0) : c.moveTo(lx(r), Y0); }
+    c.strokeStyle = col; c.lineWidth = 3.5; c.lineJoin = 'round'; c.stroke();
+  }
+  const Et = h2.E - H2.De;
+  c.setLineDash([8, 6]); c.strokeStyle = K.ink; c.lineWidth = 2; c.beginPath(); c.moveTo(L, ly(Et)); c.lineTo(L + w, ly(Et)); c.stroke(); c.setLineDash([]);
+  for (const [r, V, col] of [[h2.s.r, vSpring, K.ff], [h2.q.r, vMorse, K.ai]]) {
+    if (r < r0 || r > r1) continue;
+    c.beginPath(); c.arc(lx(r), ly(V(r)), 10, 0, 2 * PI); c.fillStyle = col; c.fill(); c.strokeStyle = K.panel; c.lineWidth = 3; c.stroke();
+  }
+  c.restore();
+  c.font = FONT(19); c.textBaseline = 'middle'; c.textAlign = 'left';
+  c.fillStyle = K.ff; c.fillText('spring', lx(1.44), ly(2.6));
+  c.fillStyle = K.ai; c.fillText('true H₂ curve', lx(1.95), ly(-1.35));
+}
+
+$('h2E').addEventListener('input', h2Kick);
+$('h2Kick').addEventListener('click', h2Kick);
+
+/* ================= 8. Size / time map ================= */
+const mpC = $('mapC'), mpX = mpC.getContext('2d');
+function drawMap() {
+  const c = mpX, W = mpC.width, H = mpC.height, L = 104, R = 24, T = 20, B = 72, w = W - L - R, h = H - T - B;
+  const x0 = 1, x1 = 10, y0 = -14, y1 = -2;
+  const lx = n => L + (Math.log10(n) - x0) / (x1 - x0) * w, ly = t => T + (y1 - Math.log10(t)) / (y1 - y0) * h;
+  c.clearRect(0, 0, W, H);
+  c.font = FONT(18); c.lineWidth = 1; c.strokeStyle = K.grid; c.fillStyle = K.muted;
+  const xl = ['10', '100', '1k', '10k', '100k', '1M', '10M', '100M', '1B', '10B'];
+  c.textAlign = 'center'; c.textBaseline = 'top';
+  for (let e = x0; e <= x1; e++) { const X0 = lx(10 ** e); c.beginPath(); c.moveTo(X0, T); c.lineTo(X0, T + h); c.stroke(); c.fillText(xl[e - 1], X0, T + h + 10); }
+  c.fillText('number of atoms', L + w / 2, T + h + 38);
+  const yl = { '-14': '10 fs', '-13': '100 fs', '-12': '1 ps', '-11': '10 ps', '-10': '100 ps', '-9': '1 ns', '-8': '10 ns', '-7': '100 ns', '-6': '1 µs', '-5': '10 µs', '-4': '100 µs', '-3': '1 ms', '-2': '10 ms' };
+  c.textAlign = 'right'; c.textBaseline = 'middle';
+  for (let e = y0; e <= y1; e++) { const Y = ly(10 ** e); c.beginPath(); c.moveTo(L, Y); c.lineTo(L + w, Y); c.stroke(); c.fillText(yl[e], L - 10, Y); }
+  c.save(); c.translate(20, T + h / 2); c.rotate(-PI / 2); c.textAlign = 'center'; c.fillText('simulated time', 0, 0); c.restore();
+  const regs = [
+    { col: K.ff, a: [1e3, 1e9], t: [1e-11, 1e-5], dash: [] },
+    { col: K.ml, a: [1e2, 1e8], t: [1e-12, 3e-7], dash: [10, 7] },
+    { col: K.ai, a: [10, 2e3], t: [1e-12, 1e-9], dash: [] }
+  ];
+  for (const g of regs) {
+    const xa = lx(g.a[0]), xb = lx(g.a[1]), ya = ly(g.t[1]), yb = ly(g.t[0]);
+    c.fillStyle = rgba(g.col, 0.12); c.fillRect(xa, ya, xb - xa, yb - ya);
+    c.setLineDash(g.dash); c.strokeStyle = g.col; c.lineWidth = 2.5; c.strokeRect(xa, ya, xb - xa, yb - ya); c.setLineDash([]);
+  }
+  c.font = 'bold ' + FONT(20);
+  c.fillStyle = K.ff; c.textAlign = 'right'; c.textBaseline = 'bottom'; c.fillText('Classical MD', lx(1e9) - 10, ly(1e-11) - 8);
+  c.fillStyle = K.ml; c.textAlign = 'center'; c.textBaseline = 'middle'; c.fillText('Machine-learned potentials', lx(10 ** 5.5), ly(10 ** -11.5));
+  c.fillStyle = K.ai; c.textAlign = 'left'; c.textBaseline = 'bottom'; c.fillText('Ab initio MD', lx(10) + 10, ly(1e-12) - 8);
+  const marks = [
+    { n: 192, t: 1e-10, lines: ['64 water molecules, ~100 ps'], side: 'r' },
+    { n: 1e5, t: 1e-6, lines: ['protein in water, ~1 µs'], side: 'l' },
+    { n: 2e4, t: 1e-3, lines: ['small protein, 1 ms', '(Anton, a purpose-built computer)'], side: 'r' },
+    { n: 6.4e7, t: 1.2e-6, lines: ['virus shell,', '64 million atoms'], side: 'r' }
+  ];
+  c.font = FONT(18);
+  for (const m of marks) {
+    const X0 = lx(m.n), Y0 = ly(m.t);
+    c.beginPath(); c.arc(X0, Y0, 7, 0, 2 * PI); c.fillStyle = K.ink; c.fill(); c.strokeStyle = K.panel; c.lineWidth = 2.5; c.stroke();
+    c.fillStyle = K.ink; c.textBaseline = 'middle'; c.textAlign = m.side === 'r' ? 'left' : 'right';
+    const off = m.lines.length > 1 ? -11 : 0;
+    m.lines.forEach((ln, i) => c.fillText(ln, X0 + (m.side === 'r' ? 14 : -14), Y0 + off + i * 22));
+  }
+}
+
+/* ================= main loop ================= */
+let lastT = performance.now();
+function frame(now) {
+  const dtReal = Math.min(0.05, Math.max(0, (now - lastT) / 1000)); lastT = now;
+  if (vis.box) simTick();
+  if (vis.timestep) { tsT += dtReal * 5; if (tsT > TS_T) tsT = 0; drawTsAnim(); drawTsChart(); }
+  if (vis.aimd) { h2Advance(dtReal * 4); if (h2.t > 45) h2Kick(); drawH2(); drawH2Chart(); }
+  requestAnimationFrame(frame);
+}
+
+/* init */
+mdLabels(); mdNote(); setChip('liquid');
+initSim(PRESETS.liquid.rho, PRESETS.liquid.T, PRESETS.liquid.T0);
+drawLJ(); ljStats();
+tsCompute(); h2Kick(); drawMap();
+simTick(); drawTsAnim(); drawTsChart(); drawH2(); drawH2Chart();
+requestAnimationFrame(frame);
+
+const mq = window.matchMedia ? matchMedia('(prefers-color-scheme: dark)') : null;
+if (mq && mq.addEventListener) mq.addEventListener('change', () => {
+  readColors(); drawLJ(); drawMap(); drawSim(); drawEnergy(); drawG(); drawTsAnim(); drawTsChart(); drawH2(); drawH2Chart();
+});
+})();
+</script>
+</body>
+</html>
